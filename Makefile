@@ -1,37 +1,9 @@
-# See LICENSE for licensing information.
+PROJECT = goldrush
 
-DIALYZER = dialyzer
-REBAR = rebar
-APPNAME = goldrush
+ERLC_OPTS = +debug_info +warn_export_all +warn_export_vars +warn_shadow_vars +warn_obsolete_guard
 
-all: app
+PLT_APPS = hipe sasl mnesia crypto compiler syntax_tools
+DIALYZER_OPTS = -Werror_handling -Wrace_conditions -Wunmatched_returns | fgrep -v -f ./dialyzer.ignore-warning
+# -Wunderspecs
 
-app: deps
-	@$(REBAR) compile
-
-deps:
-	@$(REBAR) get-deps
-
-clean:
-	@$(REBAR) clean
-	rm -f test/*.beam
-	rm -f erl_crash.dump
-
-tests: clean app eunit ct
-
-eunit:
-	@$(REBAR) -C rebar.test.config eunit skip_deps=true
-
-ct:
-	@$(REBAR) -C rebar.test.config ct skip_deps=true
-
-build-plt:
-	@$(DIALYZER) --build_plt --output_plt .$(APPNAME)_dialyzer.plt \
-		--apps kernel stdlib sasl inets crypto public_key ssl
-
-dialyze:
-	@$(DIALYZER) --src src --plt .$(APPNAME)_dialyzer.plt --no_native \
-		-Werror_handling -Wrace_conditions -Wunmatched_returns # -Wunderspecs
-
-docs:
-	@$(REBAR) doc skip_deps=true
+include erlang.mk
